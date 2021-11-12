@@ -3,16 +3,86 @@
 <head>
   <title>ometri.co</title>
   <style>
-  body { margin: 0; overflow: hidden; background-color: #000;}
+  body { margin: 0; background-color: #000; color: #fff;
+    font-family: monospace; overflow: hidden;}
   canvas { width: 100%; height: 100%;}
-</style>
+  #content {
+    position: absolute;
+    display: block;     
+    text-align: center;
+    margin: 1em auto; 
+    line-height: 1.5em;
+  }
+
+  #content p {
+    color: #ccc;
+    font-family: monospace;     
+    margin-top: 1em;
+    max-width: 600px;
+  }
+  #navigation {
+    display: block;
+    font-family: monospace;  
+    color: #fff;
+    position: absolute;
+    width: 100%; 
+    bottom: 0;
+    left: 0;
+    text-align: center;
+    z-index: 9;
+    padding: 1em 0;
+  }
+  #navigation a {
+    display: inline-block;
+    text-decoration: none;
+    margin:0 0 0 5px;
+    font-size: 1.3em;
+    color: #333;
+    line-height: 1em;
+    color: #fff;
+    padding: 12px;
+  }
+
+  #navigation a:hover, footer a:hover {
+    color:#ff0000;
+    text-decoration: underline;
+    }
+  .on {background-color: blue;}
+    </style>
 </head>
 <body>
+  
+  <div id="navigation">
+    <a href="#Tetrahedron" id="0" class="on">Tetrahedron</a>
+    <a href="#Cube" id="1">Cube</a>
+    <a href="#Octahedron" id="2">Octahedron</a>
+    <a href="#Dodecahedron" id="3">Dodecahedron</a>
+    <a href="#Icosahedron" id="4">Icosahedron</a>
+    <a href="#Sphere1" id="5">Sphere1</a>
+    <a href="#Sphere2" id="6">Sphere2</a>
+    <a href="#Sphere3" id="7">Sphere3</a>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.102.0/examples/js/controls/OrbitControls.js"></script>
 
   <script>
-  // initialise scene
+  // click event for nav
+  document.getElementById("navigation").addEventListener("click",function(e) { 
+      if(e.target && e.target.nodeName == "A") {
+        hideall(e.target.id);
+    
+        elements = document.getElementById('navigation');
+        for (var i = 0; i < elements.children.length; i++) {
+            elements.children[i].classList = "";
+        }
+        e.target.classList = 'on';
+
+      }
+  }); 
+
+
+  // initialise 3D scene
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
 
@@ -39,11 +109,39 @@
   scene.add( lights[ 1 ] );
   scene.add( lights[ 2 ] );
 
-  // Icosahedron 
-  var geometry = new THREE.IcosahedronBufferGeometry( 1, 0 );
-  var material = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
-  var icomeshi = new THREE.Mesh( geometry, material );
-  scene.add( icomeshi );
+  // array of groups
+  var groupArray = [];
+
+  // geometries
+  const geometries = [
+        new THREE.CylinderBufferGeometry( 0,3,4,3 ),
+        new THREE.BoxBufferGeometry( 1, 1, 1 ),
+        new THREE.OctahedronBufferGeometry( 1, 0 ),
+        new THREE.DodecahedronBufferGeometry(1,0),
+        new THREE.IcosahedronBufferGeometry( 1, 0 ),
+        new THREE.SphereBufferGeometry( 1, 6, 6 ),
+        new THREE.SphereBufferGeometry( 1, 12, 12 ),
+        new THREE.SphereBufferGeometry( 1, 24, 24 ),
+  ];
+
+  // shared material
+  var material = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, flatShading: true } );
+
+  // make groups+objects
+  for ( let i = 0; i < geometries.length; i ++ ) {
+    // make group + add it to array
+    group = new THREE.Group();
+    scene.add( group );
+    groupArray.push(group)
+
+    // create object
+    var geometry = geometries[i];
+    var mesh = new THREE.Mesh( geometry, material );
+    group.add( mesh );   
+  }
+
+// resize 
+  groupArray[0].scale.set(0.5,0.5,0.5)
 
   // handle window resize
   window.addEventListener('resize', function(){
@@ -59,6 +157,19 @@
 
   animate();
 
+
+
+// hide all/show one function
+function hideall(apartfrom){
+  // hide all groups
+  for ( let i = 0; i < groupArray.length; i ++ ) {
+     groupArray[i].visible = false
+  }
+  groupArray[apartfrom].visible = true
+}
+
+// start call
+hideall(0);
 </script>
 </body>
 </html>
